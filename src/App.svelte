@@ -1,30 +1,35 @@
 <script>
-	export let name;
+  import Editor from "./Editor.svelte";
+  import "brace/theme/monokai";
+  // TODO: pgn syntax highlighter https://ace.c9.io/#nav=higlighter
+
+  export let value = "";
+  export let cursorPosition;
+
+  $: console.log(cursorPosition);
 </script>
 
-<main>
-	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
-</main>
-
 <style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
-
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
-	}
+  .split-container {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 50% 50%;
+  }
 </style>
+
+<div class="split-container">
+  <Editor
+    theme="monokai"
+    options={{
+      wrap: true,
+      highlightActiveLine: true,
+      highlightSelectedWord: true,
+      behavioursEnabled: true,
+      wrapBehavioursEnabled: true,
+    }}
+    bind:value
+    bind:cursorPosition
+  />
+
+  <div />
+</div>
