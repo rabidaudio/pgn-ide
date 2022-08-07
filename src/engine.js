@@ -24,7 +24,7 @@ function getCurrentMove(moves, cursorPosition) {
       convertPgnLocationToEditorPosition(moves[0].location.start),
     )
   ) {
-    return moves[0]
+    return null
   }
 
   for (let i = 0; i < moves.length; i++) {
@@ -73,16 +73,23 @@ export default class Engine {
     this.pgn = writable(pgn || "")
     this.cursorPosition = writable({ row: 0, column: 0 })
 
-    this.parsedPgn = derived(this.pgn, ($pgn) => new Pgn($pgn))
+    this.parsedPgn = derived(this.pgn, ($pgn) => {
+      try {
+        return [new Pgn($pgn), null]
+      } catch (e) {
+        return [null, e]
+      }
+    })
+    this.errors = derived(this.parsedPgn, ([pgn, error]) => error)
 
     this.currentMove = derived(
       [this.parsedPgn, this.cursorPosition],
-      ([$parsedPgn, $cursorPosition]) =>
-        getCurrentMove($parsedPgn.history.moves, $cursorPosition),
+      ([[$parsedPgn, $errors], $cursorPosition], set) => {
+        if ($parsedPgn && !$errors) set(getCurrentMove($parsedPgn.history.moves, $cursorPosition))
+      }
     )
 
-    this.fen = derived(this.currentMove, ($currentMove) => $currentMove.fen)
-    this.errors = writable([])
+    this.fen = derived(this.currentMove, ($currentMove) => $currentMove ? $currentMove.fen : null)
   }
 
   movePiece(move) {}

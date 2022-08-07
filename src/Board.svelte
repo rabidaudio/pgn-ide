@@ -6,6 +6,7 @@
   export let fen = null
 
   let ground
+  let outerContainer
   let container
 
   function rerender(fen) {
@@ -20,10 +21,21 @@
     })
   }
 
+  function resize() {
+    // seems to work best with an integer multiple of 8
+    let dim = Math.min(outerContainer.offsetWidth - 10, outerContainer.offsetHeight - 20)
+    dim = dim - (dim % 8)
+    const px = `${dim}px`
+    container.style.width = px;
+    container.style.height = px;
+  }
+
   $: if (container) rerender(fen)
+  $: if (container && outerContainer) resize()
 
   onMount(() => {
     rerender(fen)
+    resize()
   })
 
   onDestroy(() => {
@@ -31,9 +43,7 @@
   })
 </script>
 
-<!-- TODO: autoscale -->
-<div class="blue merida">
-  <div class="cg-wrap">
-    <div bind:this={container} />
-  </div>
+<svelte:window on:resize={resize}/>
+<div class="board blue merida" bind:this={outerContainer}>
+  <div bind:this={container} />
 </div>

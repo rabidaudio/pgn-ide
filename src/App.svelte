@@ -9,7 +9,8 @@
 
   const { pgn, fen, errors, parsedPgn, currentMove, cursorPosition } = engine
 
-  $: console.log($currentMove.san)
+  $: console.log($currentMove && $currentMove.san)
+  $: console.log($errors)
 </script>
 
 <style>
@@ -18,6 +19,17 @@
     display: grid;
     grid-template-columns: 50% 50%;
   }
+
+  @media only screen and (orientation: portrait) {
+    .split-container {
+      grid-template-columns: 100%;
+      grid-template-rows: 50% 50%;
+    }
+    :global(.board) {
+      order: -1;
+    }
+  }
+
 </style>
 
 <div class="split-container">
