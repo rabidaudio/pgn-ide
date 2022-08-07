@@ -1,9 +1,15 @@
 <script>
+  import Engine from "./engine"
+
   import Editor from "./Editor.svelte"
   import Board from "./Board.svelte"
 
   export let value = ""
-  let cursorPosition
+  const engine = new Engine(value)
+
+  const { pgn, fen, errors, parsedPgn, currentMove, cursorPosition } = engine
+
+  $: console.log($currentMove.san)
 </script>
 
 <style>
@@ -15,10 +21,7 @@
 </style>
 
 <div class="split-container">
-  <Editor
-    bind:value
-    bind:cursorPosition
-  />
+  <Editor bind:value={$pgn} bind:cursorPosition={$cursorPosition} />
 
-  <Board />
+  <Board fen={$fen} />
 </div>

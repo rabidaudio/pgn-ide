@@ -3,19 +3,31 @@
 
   import { Chessground } from "chessground"
 
+  export let fen = null
+
   let ground
   let container
 
-  onMount(() => {
+  function rerender(fen) {
+    if (ground) ground.destroy()
     ground = Chessground(container, {
-      fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+      fen: fen,
       events: {
         move: (orig, dest, capturedPiece) => {
-          console.log('move', orig, dest, capturedPiece)
-        }
-      }
+          console.log("move", orig, dest, capturedPiece)
+        },
+      },
     })
-    console.log(container, ground)
+  }
+
+  $: if (container) rerender(fen)
+
+  onMount(() => {
+    rerender(fen)
+  })
+
+  onDestroy(() => {
+    ground.destroy()
   })
 </script>
 

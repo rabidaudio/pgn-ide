@@ -1,18 +1,15 @@
 <script>
-  import { onMount, onDestroy, createEventDispatcher } from "svelte"
+  import { onMount, onDestroy } from "svelte"
   import * as ace from "brace"
 
   import "brace/theme/monokai"
   // TODO: pgn syntax highlighter https://ace.c9.io/#nav=higlighter
 
   export let value = ""
+  export let cursorPosition = { row: 0, column: 0 }
   let contentBackup
 
-  export let cursorPosition
-
-  const dispatch = createEventDispatcher()
-
-  const mode = 'text'
+  const mode = "text"
 
   let editor
   let editorElement
@@ -49,7 +46,6 @@
     editor.on("change", function () {
       const content = editor.getValue()
       value = content
-      dispatch("input", content)
       contentBackup = content
     })
     contentBackup = value
