@@ -3,6 +3,7 @@
   import * as ace from "brace"
 
   import "brace/theme/monokai"
+  import "./grammar/pgn"
   // TODO: pgn syntax highlighter https://ace.c9.io/#nav=higlighter
 
   const Range = ace.acequire("ace/range").Range
@@ -11,8 +12,6 @@
   export let cursorPosition = { row: 0, column: 0 }
   export let errors = []
   let contentBackup
-
-  const mode = "text"
 
   let editor
   let editorElement
@@ -60,7 +59,7 @@
       }
     }, 100)
 
-    editor.getSession().setMode("ace/mode/" + mode)
+    editor.getSession().setMode("ace/mode/pgn")
     editor.setTheme("ace/theme/monokai")
     editor.setValue(value, 1)
     editor.on("change", function () {
