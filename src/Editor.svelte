@@ -5,8 +5,11 @@
   import "brace/theme/monokai"
   // TODO: pgn syntax highlighter https://ace.c9.io/#nav=higlighter
 
+  const Range = ace.acequire("ace/range").Range
+
   export let value = ""
   export let cursorPosition = { row: 0, column: 0 }
+  export let errors = []
   let contentBackup
 
   const mode = "text"
@@ -14,12 +17,29 @@
   let editor
   let editorElement
   let timer
+  let errorMarkers = []
 
   $: watchValue(value)
   function watchValue(val) {
     if (contentBackup !== val && editor && typeof val === "string") {
       editor.session.setValue(val)
       contentBackup = val
+    }
+  }
+
+  $: watchErrors(errors)
+  function watchErrors(newErrors) {
+    if (editor) {
+      editor.session.clearAnnotations()
+      for (const markerId of errorMarkers) {
+        editor.session.removeMarker(markerId)
+      }
+      editor.session.setAnnotations(newErrors.map((e) => e.annotation()))
+      errorMarkers = newErrors.map((e) => {
+        const { start, end, clazz, type, inFront } = e.marker()
+        const range = new Range(start.row, start.column, end.row, end.column)
+        return editor.session.addMarker(range, clazz, type, inFront)
+      })
     }
   }
 
@@ -37,7 +57,6 @@
         column !== cursorPosition.column
       ) {
         cursorPosition = { row, column }
-        // console.log(cursorPosition)
       }
     }, 100)
 

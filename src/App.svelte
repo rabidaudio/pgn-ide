@@ -7,10 +7,7 @@
   export let value = ""
   const engine = new Engine(value)
 
-  const { pgn, fen, errors, parsedPgn, currentMove, cursorPosition } = engine
-
-  $: console.log($currentMove && $currentMove.san)
-  $: console.log($errors)
+  const { pgn, fen, errors, cursorPosition } = engine
 </script>
 
 <style>
@@ -29,11 +26,14 @@
       order: -1;
     }
   }
-
 </style>
 
 <div class="split-container">
-  <Editor bind:value={$pgn} bind:cursorPosition={$cursorPosition} />
+  <Editor
+    bind:value={$pgn}
+    bind:cursorPosition={$cursorPosition}
+    errors={$errors}
+  />
 
   <Board fen={$fen} />
 </div>

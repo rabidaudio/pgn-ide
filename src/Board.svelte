@@ -23,11 +23,14 @@
 
   function resize() {
     // seems to work best with an integer multiple of 8
-    let dim = Math.min(outerContainer.offsetWidth - 10, outerContainer.offsetHeight - 20)
+    let dim = Math.min(
+      outerContainer.offsetWidth - 10,
+      outerContainer.offsetHeight - 20,
+    )
     dim = dim - (dim % 8)
     const px = `${dim}px`
-    container.style.width = px;
-    container.style.height = px;
+    container.style.width = px
+    container.style.height = px
   }
 
   $: if (container) rerender(fen)
@@ -43,7 +46,7 @@
   })
 </script>
 
-<svelte:window on:resize={resize}/>
+<svelte:window on:resize={resize} />
 <div class="board blue merida" bind:this={outerContainer}>
   <div bind:this={container} />
 </div>
