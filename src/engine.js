@@ -5,7 +5,7 @@ import { writable, derived } from "svelte/store"
 
 // cm-pgn uses 1-indexed line numbers and "offset"/"line"/"column"
 // brace uses 0-indexed line numbers and "row"/"column"
-export function convertPgnLocationToEditorPosition(pgnLocation) {
+function convertPgnLocationToEditorPosition(pgnLocation) {
   let { line, column } = pgnLocation
   return { row: line - 1, column }
 }
@@ -13,6 +13,57 @@ export function convertPgnLocationToEditorPosition(pgnLocation) {
 // return true if a is before b
 function isBefore(a, b) {
   return a.row < b.row || (a.row === b.row && a.column < b.column)
+}
+
+function getCurrentMove(moves, cursorPosition) {
+  if (moves.length === 0) return null
+
+  if (
+    isBefore(
+      cursorPosition,
+      convertPgnLocationToEditorPosition(moves[0].location.start),
+    )
+  ) {
+    return moves[0]
+  }
+
+  for (let i = 0; i < moves.length; i++) {
+    let move = moves[i]
+    let position = convertPgnLocationToEditorPosition(move.location.start)
+    if (isBefore(cursorPosition, position)) {
+      return moves[i - 1]
+    }
+    if (move.variations.length > 0) {
+      const lastVariation = move.variations
+        .map((vv) => vv[vv.length - 1])
+        .sort((a, b) => a.location.end.offset - b.location.end.offset)[0]
+      const lastVariationEnd = convertPgnLocationToEditorPosition(
+        lastVariation.location.end,
+      )
+      let previousVariation
+      if (isBefore(cursorPosition, lastVariationEnd)) {
+        for (let j = 0; j < move.variations.length; j++) {
+          for (let k = 0; k < move.variations[j].length; k++) {
+            let variation = move.variations[j][k]
+            if (variation) {
+              let start = convertPgnLocationToEditorPosition(
+                variation.location.start,
+              )
+              if (isBefore(cursorPosition, start)) {
+                if (!previousVariation) {
+                  return move
+                }
+                return previousVariation
+              }
+              previousVariation = variation
+            }
+          }
+        }
+        return lastVariation
+      }
+    }
+  }
+  return moves[moves.length - 1]
 }
 
 export default class Engine {
@@ -26,29 +77,11 @@ export default class Engine {
 
     this.currentMove = derived(
       [this.parsedPgn, this.cursorPosition],
-      ([$parsedPgn, $cursorPosition]) => {
-        if ($parsedPgn.history.moves.length === 0) return null
-
-        const firstMove = $parsedPgn.history.moves[0]
-        const firstMoveStart = convertPgnLocationToEditorPosition(
-          firstMove.location.start,
-        )
-        if (isBefore($cursorPosition, firstMoveStart)) return firstMove
-
-        for (let i = 0; i < $parsedPgn.history.moves.length; i++) {
-          let move = $parsedPgn.history.moves[i]
-          let position = convertPgnLocationToEditorPosition(move.location.start)
-          if (isBefore($cursorPosition, position)) {
-            return $parsedPgn.history.moves[i - 1]
-          }
-        }
-        return $parsedPgn.history.moves[$parsedPgn.history.moves.length - 1]
-      },
+      ([$parsedPgn, $cursorPosition]) =>
+        getCurrentMove($parsedPgn.history.moves, $cursorPosition),
     )
 
-    this.fen = derived(this.currentMove, ($currentMove) => {
-      return $currentMove.fen
-    })
+    this.fen = derived(this.currentMove, ($currentMove) => $currentMove.fen)
     this.errors = writable([])
   }
 

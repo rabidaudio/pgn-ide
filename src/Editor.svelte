@@ -37,6 +37,7 @@
         column !== cursorPosition.column
       ) {
         cursorPosition = { row, column }
+        // console.log(cursorPosition)
       }
     }, 100)
 
