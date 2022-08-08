@@ -1,7 +1,8 @@
 import { Chess } from "chess.js"
 import { Pgn } from "cm-pgn"
-
 import { writable, derived } from "svelte/store"
+
+import { isEqual } from "lodash"
 
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
@@ -153,12 +154,17 @@ export default class Engine {
     const chess = derived(
       [parsedPgn, currentMove],
       ([[$parsedPgn, $parseErrors], $currentMove], set) => {
-        if ($parsedPgn && $parseErrors.length === 0 && $currentMove) {
+        if ($parsedPgn && $parseErrors.length === 0) {
           const fen = $parsedPgn.header.tags["FEN"] || DEFAULT_FEN
           const chess = new Chess(fen)
-          for (const move of $parsedPgn.history.moves) {
-            if (!chess.move(move.san)) {
-              throw new IllegalMoveError(move.san, move.location) // this shouldn't happen as the parser already allowed the move
+          if ($currentMove) {
+            for (const move of $parsedPgn.history.moves) {
+              if (!chess.move(move.san)) {
+                throw new IllegalMoveError(move.san, move.location) // this shouldn't happen as the parser already allowed the move
+              }
+              if (isEqual(move, $currentMove)) {
+                break
+              }
             }
           }
           set(chess)

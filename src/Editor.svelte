@@ -2,15 +2,20 @@
   import { onMount, onDestroy } from "svelte"
   import * as ace from "brace"
 
+  import "brace/theme/clouds_midnight"
   import "brace/theme/monokai"
+  import "brace/theme/tomorrow_night_blue"
+  import "brace/theme/chrome"
+  import "brace/theme/github"
+
   import "./grammar/pgn"
-  // TODO: pgn syntax highlighter https://ace.c9.io/#nav=higlighter
 
   const Range = ace.acequire("ace/range").Range
 
   export let value = ""
   export let cursorPosition = { row: 0, column: 0 }
   export let errors = []
+  export let theme = "monokai"
   let contentBackup
 
   let editor
@@ -23,6 +28,14 @@
     if (contentBackup !== val && editor && typeof val === "string") {
       editor.session.setValue(val)
       contentBackup = val
+    }
+  }
+
+  $: watchTheme(theme)
+  function watchTheme(newTheme) {
+    if (editor) {
+      console.log("setTheme", newTheme)
+      editor.setTheme(`ace/theme/${newTheme}`)
     }
   }
 
@@ -60,7 +73,7 @@
     }, 100)
 
     editor.getSession().setMode("ace/mode/pgn")
-    editor.setTheme("ace/theme/monokai")
+    editor.setTheme(`ace/theme/${theme}`)
     editor.setValue(value, 1)
     editor.on("change", function () {
       const content = editor.getValue()

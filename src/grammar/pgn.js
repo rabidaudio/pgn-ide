@@ -17,47 +17,105 @@ ace.define(
 
     // Adapted from https://github.com/jakeboone02/vscode-language-pgn/blob/main/syntaxes/pgn.tmLanguage
     var PgnHighlightRules = function () {
+      const includeVariation = (baseToken) =>
+        function (match, state, stack) {
+          if (state === "start") return baseToken
+          return [state, baseToken].join(".")
+        }
+
       this.$rules = {
         start: [
+          { include: "#tag" },
+          { include: "#moves" },
+          {
+            regex: /\b(?:1-0|0-1|1\/2-1\/2)\n?$/,
+            token: "string.quoted.double.pgn",
+          },
+        ],
+        "#tag": [
           {
             regex: /\[/,
-            next: "tag",
             token: "paren.lparen",
+            push: [
+              {
+                token: "keyword.control.pgn",
+                regex: /(?:Event|Site|Date|Round|White|Black|Result)\b/,
+              },
+              {
+                token: "keyword.other.special-method.pgn",
+                regex: /\b([A-Z][a-z]*)+\b/,
+              },
+              {
+                token: "punctuation.definition.string.begin.pgn",
+                regex: /\"/,
+                push: [
+                  {
+                    token: "constant.character.escape.pgn",
+                    regex: /\\\\./,
+                  },
+                  {
+                    token: "punctuation.definition.string.end.pgn",
+                    regex: /\"/,
+                    next: "pop",
+                  },
+                  { defaultToken: "string.quoted.double.pgn" },
+                ],
+              },
+              {
+                regex: /\]/,
+                token: "paren.rparen",
+                next: "pop",
+              },
+            ],
           },
         ],
-        tag: [
+        "#moves": [
           {
-            token: "keyword.control.pgn",
-            regex: /(?:Event|Site|Date|Round|White|Black|Result)\b/,
+            regex: /\b[0-9]+\.\.?\.?/,
+            onMatch: includeVariation("storage.type.bold.pgn"),
           },
           {
-            token: "keyword.other.special-method.pgn",
-            regex: /\b([A-Z][a-z]*)+\b/,
+            regex: /\b(?:[KQBNR]?[a-h]?[0-9]?x?[a-h][0-9]\+?\#?|O-O|O-O-O)/,
+            onMatch: includeVariation("markup.san.pgn"),
           },
           {
-            token: "punctuation.definition.string.begin.pgn",
-            regex: '"',
-            next: "quoted_tag_value",
+            regex:
+              /(?:\$[0-9]+|!!|\?\?|!\?|\?!|!|\?|‼|⁇|⁉|⁈|□|=|∞|⩲|⩱|±|∓|\+-|-\+|⨀|⟳|→|↑|⇆|D)/,
+            onMatch: includeVariation("keyword.operator.pgn"),
           },
+          { include: "#variation" },
+          { include: "#comment" },
+        ],
+        "#comment": [
           {
-            regex: /\]/,
-            token: "paren.rparen",
-            next: "start",
+            regex: /\{/,
+            token: "comment.block.documentation.pgn",
+            push: [
+              {
+                token: "comment.block.documentation.pgn",
+                regex: /\}/,
+                next: "pop",
+              },
+              { defaultToken: "comment.block.documentation.pgn" },
+            ],
           },
         ],
-        quoted_tag_value: [
+        "#variation": [
           {
-            token: "constant.character.escape.pgn",
-            regex: /\\\\./,
+            token: "markup.italic.pgn",
+            regex: /\(/,
+            push: [
+              {
+                token: "markup.italic.pgn",
+                regex: /\)/,
+                next: "pop",
+              },
+              { include: "#moves" },
+            ],
           },
-          {
-            token: "punctuation.definition.string.end.pgn",
-            regex: '"',
-            next: "tag",
-          },
-          { defaultToken: "string.quoted.double.pgn" },
         ],
       }
+      this.normalizeRules()
     }
 
     oop.inherits(PgnHighlightRules, TextHighlightRules)

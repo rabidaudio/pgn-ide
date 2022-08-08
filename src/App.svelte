@@ -5,6 +5,7 @@
   import Board from "./Board.svelte"
 
   export let value = ""
+  export let theme = "monokai" //"chrome"
   const engine = new Engine(value)
 
   const { pgn, fen, errors, cursorPosition } = engine
@@ -33,7 +34,20 @@
     bind:value={$pgn}
     bind:cursorPosition={$cursorPosition}
     errors={$errors}
+    {theme}
   />
 
   <Board fen={$fen} />
 </div>
+
+<!-- <div class="settings">
+    <select bind:value={theme}>
+      {#each ["clouds_midnight",
+      "monokai",
+      "tomorrow_night_blue",
+      "chrome",
+      "github"] as theme }
+        <option value={theme}>{theme}</option>
+      {/each}  
+    </select>
+  </div> -->
