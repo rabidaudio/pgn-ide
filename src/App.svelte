@@ -4,11 +4,15 @@
   import Editor from "./Editor.svelte"
   import Board from "./Board.svelte"
 
-  export let value = ""
   export let theme = "monokai" //"chrome"
-  const engine = new Engine(value)
+  const engine = new Engine(window.localStorage.getItem('game') || "")
 
   const { pgn, fen, errors, cursorPosition } = engine
+
+  $: persistGame($pgn)
+  function persistGame(game) {
+    window.localStorage.setItem('game', game)
+  }
 </script>
 
 <style>

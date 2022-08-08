@@ -13,6 +13,14 @@
     if (ground) ground.destroy()
     ground = Chessground(container, {
       fen: fen,
+      disableContextMenu: true,
+      animation: {
+        enabled: true,
+        duration: 100,
+      },
+      highlight: {
+        lastMove: true,
+      },
       events: {
         move: (orig, dest, capturedPiece) => {
           console.log("move", orig, dest, capturedPiece)
