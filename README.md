@@ -2,6 +2,27 @@ Split-screen editor for PGN
 
 Annotate games with syntax highlighting and visualization.
 
+
+{
+  moves: [Move],
+  index: int | null,
+  initial_fen: str,
+  current_fen: str,
+  tags: {},
+
+}
+
+Move id: "0:0:Pe2:Pe4", "0:1:e7:e5", "1:0:Ng1:Nf3"
+getTransitionMoves(old_state, new_state) -> [Moves]
+  undo, redo
+
+animate:
+  current state:
+    fen
+    moves
+    index
+  new_state
+
 TODO:
 
 - board moves update editor
